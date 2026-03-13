@@ -1,14 +1,11 @@
-FROM openjdk:8 AS BUILD_IMAGE
-WORKDIR /usr/src/app/
+FROM eclipse-temurin:8u392-b08-jdk AS build
+WORKDIR /app
 RUN apt update && apt install maven -y
-COPY ./ /usr/src/app/
-RUN mvn install -DskipTests
-
-FROM openjdk:8
-
-WORKDIR /usr/src/app/
-COPY --from=BUILD_IMAGE /usr/src/app/target/book-work-0.0.1-SNAPSHOT.jar ./book-work-0.0.1.jar
-
+COPY . .
+RUN mvn package -DskipTests
+ 
+FROM eclipse-temurin:8-jdk
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 9000
-ENTRYPOINT ["java","-jar","book-work-0.0.1.jar"]
-# Test
+ENTRYPOINT ["java", "-jar", "app.jar"]
